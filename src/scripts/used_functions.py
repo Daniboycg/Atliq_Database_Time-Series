@@ -129,7 +129,7 @@ def plot_sales_by_customer(df):
         subset = sales_by_date_customer[sales_by_date_customer["customer"] == customer]
         plt.plot(subset["date"], subset["total_gross_sales"], label=customer)
 
-    plt.title("Sales Over Time by Seller")
+    plt.title("Sales Over Time by Seller in Chile")
     plt.xlabel("Date")
     plt.ylabel("Total Gross Sales")
     plt.legend(loc="upper left")
@@ -165,7 +165,7 @@ def plot_sales_by_category_and_customer(df):
         hue="customer",
         palette="viridis",
     )
-    plt.title("Total Gross Sales by Category and Customer in Chile")
+    plt.title("Total Gross Sales by Category and Customer")
     plt.ylabel("Total Gross Sales")
     plt.xlabel("Category")
     plt.xticks(rotation=45)
@@ -284,4 +284,58 @@ def plot_sales_by_category(df):
     ax.tick_params(axis="x", rotation=45)
 
     plt.tight_layout()
+    plt.show()
+
+
+def plot_sales_category_matrix_country(df):
+    """
+    Plots a matrix of total gross sales by category and market (country) over time with distinct colors for each country.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame containing at least the 'date', 'category', 'market', and 'total_gross_sales' columns.
+
+    Returns:
+        None
+    """
+    grouped_data = (
+        df.groupby(["date", "category", "market"])["total_gross_sales"]
+        .sum()
+        .reset_index()
+    )
+    grouped_data["date"] = pd.to_datetime(grouped_data["date"])
+    grouped_data = grouped_data.sort_values(by="date")
+    categories = grouped_data["category"].unique()
+    countries = grouped_data["market"].unique()
+
+    # Define distinct colors for each country
+    colors = ["blue", "green", "red", "purple", "cyan", "orange"]
+    country_colors = {country: color for country, color in zip(countries, colors)}
+
+    n_rows = len(categories)
+    n_cols = len(countries)
+
+    # Create the plot matrix
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, 5 * n_rows), sharex=True)
+
+    # Iterate over each category and place it in the matrix
+    for idx_row, category in enumerate(categories):
+        for idx_col, country in enumerate(countries):
+            ax = axes[idx_row, idx_col]
+            subset = grouped_data[
+                (grouped_data["category"] == category)
+                & (grouped_data["market"] == country)
+            ]
+            ax.plot(
+                subset["date"],
+                subset["total_gross_sales"],
+                marker="o",
+                color=country_colors[country],
+            )
+            ax.set_title(f"{category} - {country}")
+            ax.set_xlabel("Date")
+            ax.set_ylabel("Total Sales")
+            ax.grid(True)
+            ax.tick_params(axis="x", rotation=45)
+
+    fig.tight_layout()
     plt.show()
