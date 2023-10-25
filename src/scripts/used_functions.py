@@ -339,3 +339,50 @@ def plot_sales_category_matrix_country(df):
 
     fig.tight_layout()
     plt.show()
+
+
+def plot_sales_by_selected_categories_countries(df):
+    """
+    Plots a series of graphs for total gross sales by category, with each country represented by a distinct line color.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame containing at least the 'date', 'category', 'market', and 'total_gross_sales' columns.
+
+    Returns:
+        None
+    """
+    grouped_data = (
+        df.groupby(["date", "category", "market"])["total_gross_sales"]
+        .sum()
+        .reset_index()
+    )
+    grouped_data["date"] = pd.to_datetime(grouped_data["date"])
+    grouped_data = grouped_data.sort_values(by="date")
+    categories = grouped_data["category"].unique()
+    countries = grouped_data["market"].unique()
+
+    # Define distinct colors for each country
+    colors = ["blue", "green", "red", "purple", "cyan", "orange"]
+    country_colors = {country: color for country, color in zip(countries, colors)}
+
+    # Create the plot for each category
+    for category in categories:
+        plt.figure(figsize=(14, 6))
+        subset = grouped_data[grouped_data["category"] == category]
+        for country in countries:
+            country_data = subset[subset["market"] == country]
+            plt.plot(
+                country_data["date"],
+                country_data["total_gross_sales"],
+                label=country,
+                color=country_colors[country],
+                marker="o",
+            )
+
+        plt.title(f"Sales by {category} per country (Mar 2021 - Ene 2022)")
+        plt.xlabel("Date")
+        plt.ylabel("Total Gross Sales ($)")
+        plt.legend()
+        plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+        plt.tight_layout()
+        plt.show()
