@@ -386,3 +386,69 @@ def plot_sales_by_selected_categories_countries(df):
         plt.grid(True, which="both", linestyle="--", linewidth=0.5)
         plt.tight_layout()
         plt.show()
+
+
+import matplotlib.pyplot as plt
+
+
+def plot_sales_by_month(df):
+    """
+    Grafica las ventas totales brutas por mes.
+
+    Parámetros:
+        df (pd.DataFrame): DataFrame que contiene al menos las columnas 'date' y 'total_gross_sales'.
+
+    Devoluciones:
+        None
+    """
+    sales_by_month = df.groupby(df["date"].dt.to_period("M")).agg(
+        {"total_gross_sales": "sum"}
+    )
+
+    # Graficando las ventas totales por mes
+    plt.figure(figsize=(12, 6))
+    sales_by_month.plot(kind="bar", ax=plt.gca(), color="black")
+    plt.title("Ventas Totales por Mes")
+    plt.ylabel("Ventas Brutas Totales")
+    plt.xlabel("Mes")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_sales_by_segment(df):
+    """
+    Plots the total gross sales by segment before and after August 2021.
+
+    Parameters:
+        df (pd.DataFrame): DataFrame containing at least the columns 'date', 'segment', and 'total_gross_sales'.
+
+    Returns:
+        None
+    """
+    data_pre_august = df[df["date"] < "2021-08-01"]
+    data_post_august = df[df["date"] >= "2021-08-01"]
+    sales_by_segment_pre = data_pre_august.groupby("segment").agg(
+        {"total_gross_sales": "sum"}
+    )
+    sales_by_segment_post = data_post_august.groupby("segment").agg(
+        {"total_gross_sales": "sum"}
+    )
+
+    # Combining the data into a single DataFrame
+    sales_by_segment_combined = pd.concat(
+        [sales_by_segment_pre, sales_by_segment_post], axis=1
+    )
+    sales_by_segment_combined.columns = ["Pre-August", "Post-August"]
+
+    # Plotting the sales by segment for the two periods
+    sales_by_segment_combined.plot(
+        kind="bar", figsize=(14, 7), color=["coral", "dodgerblue"]
+    )
+    plt.title("Total Sales by Segment (Pre and Post August 2021)")
+    plt.ylabel("Total Gross Sales")
+    plt.xlabel("Segment")
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.legend(title="Period")
+    plt.show()
